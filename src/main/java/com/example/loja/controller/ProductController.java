@@ -3,6 +3,7 @@ package com.example.loja.controller;
 import com.example.loja.dto.ProductRecord;
 import com.example.loja.models.ProductModels;
 import com.example.loja.repository.ProductRepository;
+import com.example.loja.service.FileUploadService;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,18 +24,32 @@ public class ProductController {
 
     @Autowired
     ProductRepository productRepository;
+    @Autowired
+    FileUploadService fileUploadService;
     @CrossOrigin
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-//    Metodo aonde vou receber a requisição
+
     public ResponseEntity<Object> saveProduct(@ModelAttribute @Valid ProductRecord productRecord){
-//        Ativando o model
         var productModel = new ProductModels();
-//        Convertendo o DTO que veio pela requisição para Json para o Model
         BeanUtils.copyProperties(productRecord, productModel);
-//        Dando o Retorno da requisição
-        return ResponseEntity.status(HttpStatus.CREATED).body(productRepository.save(productModel));
+
+
+        String urlImg;
+
+        try{
+
+            urlImg = fileUploadService.fazerUpload(productRecord.img());
+
+        }catch (IOException e){
+            throw new RuntimeException(e);
+        }
+
+
+        productModel.setUrl_img(urlImg);
+
+       return ResponseEntity.status(HttpStatus.CREATED).body(productRepository.save(productModel));
     }
-//    @CrossOrigin(origins = "http://127.0.0.1:5173")
+
     @CrossOrigin
     @GetMapping
     public ResponseEntity<List<ProductModels>> listarProduct(){
@@ -47,8 +63,7 @@ public class ProductController {
     }
     @CrossOrigin
     @PutMapping("/{id}")
-//    O Opitional é um container que lida com valores que podem estar vazios ou não. Evitando o uso execivo de verificação de nulidade.
-//    O Object trada diferentes valores retornando ou não variados tipos de valores.
+
     public ResponseEntity<Object> updateProducts(@PathVariable("id")UUID id, @RequestBody @Valid ProductRecord productRecord){
         Optional<ProductModels> updateProduto = productRepository.findById(id);
         if (updateProduto.isEmpty()){
@@ -75,10 +90,10 @@ public class ProductController {
 
     @DeleteMapping
     public ResponseEntity<Void> deleteAll() {
-        // Deleta todos os produtos do repositório
+
         productRepository.deleteAll();
 
-        // Retorna uma resposta vazia com status 204 No Content
+
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
