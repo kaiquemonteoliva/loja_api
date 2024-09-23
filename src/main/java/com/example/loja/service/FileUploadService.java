@@ -40,7 +40,24 @@ public class FileUploadService {
             stream.write(imagem.getBytes());
         }
 
-        return nomeImg;
+        return  nomeImg;
+    }
+
+    public void deleteOldImage(String urlImg) {
+        // Caminho completo da imagem no sistema de arquivos local
+        File file = new File("./src/main/resouces/static/img" + urlImg);
+
+        // Verifica se o arquivo existe e tenta deletá-lo
+        if (file.exists()) {
+            boolean deleted = file.delete();
+            if (!deleted) {
+                // Pode lançar uma exceção ou logar o erro se a remoção falhar
+                throw new RuntimeException("Não foi possível deletar a imagem antiga: " + urlImg);
+            }
+        } else {
+            // Se o arquivo não existir, pode logar um aviso ou simplesmente ignorar
+            System.out.println("Imagem não encontrada: " + urlImg);
+        }
     }
 
 }

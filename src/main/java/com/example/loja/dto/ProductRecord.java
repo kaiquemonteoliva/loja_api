@@ -6,10 +6,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
-public record ProductRecord(
+public record ProductRecord<getValor>(
         @NotBlank String name,
         String description,
         @NotNull BigDecimal value,
 
-        MultipartFile img
-){}
+        MultipartFile url_img
+
+
+){
+
+}
