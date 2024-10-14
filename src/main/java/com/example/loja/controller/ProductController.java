@@ -33,17 +33,13 @@ public class ProductController {
     public ResponseEntity<Object> saveProduct(@ModelAttribute @Valid ProductRecord productRecord) {
         var productModel = new ProductModels();
         BeanUtils.copyProperties(productRecord, productModel);
-
         String urlImg;
-
         try {
             urlImg = fileUploadService.fazerUpload(productRecord.url_img());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         productModel.setUrl_img(urlImg);
-
-
 
         return ResponseEntity.status(HttpStatus.CREATED).body(productRepository.save(productModel));
     }
@@ -60,25 +56,17 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(getProduto.get());
     }
 
-
     @PutMapping(value = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<Object> updateProducts(@PathVariable("id") UUID id, @ModelAttribute @Valid ProductRecord productRecord) {
         Optional<ProductModels> updateProduto = productRepository.findById(id);
-
         if (updateProduto.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
         } else {
             var productModel = updateProduto.get();
-
-            // Copiando os novos dados do productRecord para o modelo
             BeanUtils.copyProperties(productRecord, productModel, "url_img");
-
-            // Verificando se uma nova imagem foi enviada
             if (productRecord.url_img() != null && !productRecord.url_img().isEmpty()) {
-                // Remover a imagem antiga, se necessário (exemplo de remoção)
                  fileUploadService.deleteOldImage(productModel.getUrl_img());
 
-                // Fazer o upload da nova imagem
                 try {
                     String newImageUrl = fileUploadService.fazerUpload(productRecord.url_img());
                     productModel.setUrl_img(newImageUrl);
@@ -87,11 +75,9 @@ public class ProductController {
                 }
             }
 
-            // Salvando o produto atualizado
             return ResponseEntity.status(HttpStatus.OK).body(productRepository.save(productModel));
         }
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deletProducts(@PathVariable("id") UUID id) {
@@ -107,10 +93,8 @@ public class ProductController {
     @DeleteMapping
     public ResponseEntity<Void> deleteAll() {
         productRepository.deleteAll();
-
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-
 
 }
 
